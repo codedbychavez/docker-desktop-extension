@@ -1,53 +1,71 @@
-import React from 'react';
-import Button from '@mui/material/Button';
+import React, { useEffect } from 'react';
+import { 
+  Paper,
+  Stack, 
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Typography 
+} from '@mui/material';
 import { createDockerDesktopClient } from '@docker/extension-api-client';
-import { Stack, TextField, Typography } from '@mui/material';
 
-// Note: This line relies on Docker Desktop's presence as a host application.
-// If you're running this React app in a browser, it won't work properly.
-const client = createDockerDesktopClient();
-
-function useDockerDesktopClient() {
-  return client;
-}
+// obtain docker desktop extension client
+const ddClient = createDockerDesktopClient();
 
 export function App() {
-  const [response, setResponse] = React.useState<string>();
-  const ddClient = useDockerDesktopClient();
+  const [containers, setContainers] = React.useState<any[]>([]);
 
-  const fetchAndDisplayResponse = async () => {
-    const result = await ddClient.extension.vm?.service?.get('/hello');
-    setResponse(JSON.stringify(result));
-  };
+  useEffect(() => {
+    // list all containers
+    ddClient.docker.cli.exec('ps', ['--all', '--format', '"{json .}"']).then((result) => {
+      // result.parseJsonLines() parses the output of the command into an array of objects
+      setContainers(result.parseJsonLines());
+    });
+  }, []);
 
   return (
-    <>
-      <Typography variant="h3">Docker extension demo</Typography>
-      <Typography variant="body1" color="text.secondary" sx={{ mt: 2 }}>
-        This is a basic page rendered with MUI, using Docker's theme. Read the
-        MUI documentation to learn more. Using MUI in a conventional way and
-        avoiding custom styling will help make sure your extension continues to
-        look great as Docker's theme evolves.
+    <Stack>
+      <Typography data-testid="heading" variant="h3" role="title">
+        Container list
       </Typography>
-      <Typography variant="body1" color="text.secondary" sx={{ mt: 2 }}>
-        Pressing the below button will trigger a request to the backend. Its
-        response will appear in the textarea.
+      <Typography
+        data-testid="subheading"
+        variant="body1"
+        color="text.secondary"
+        sx={{ mt: 2 }}
+      >
+        Simple list of containers using Docker Extensions SDK.
       </Typography>
-      <Stack direction="row" alignItems="start" spacing={2} sx={{ mt: 4 }}>
-        <Button variant="contained" onClick={fetchAndDisplayResponse}>
-          Call backend
-        </Button>
-
-        <TextField
-          label="Backend response"
-          sx={{ width: 480 }}
-          disabled
-          multiline
-          variant="outlined"
-          minRows={5}
-          value={response ?? ''}
-        />
-      </Stack>
-    </>
+      <TableContainer>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Container id</TableCell>
+              <TableCell>Image</TableCell>
+              <TableCell>Command</TableCell>
+              <TableCell>Created</TableCell>
+              <TableCell>Status</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            { containers.map((container) => (
+              <TableRow
+                key={container.ID}
+                sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+              >
+                <TableCell>{container.ID}</TableCell>
+                <TableCell>{container.Image}</TableCell>
+                <TableCell>{container.Command}</TableCell>
+                <TableCell>{container.CreatedAt}</TableCell>
+                <TableCell>{container.Status}</TableCell>
+              </TableRow>
+            )) }
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </Stack>
   );
 }
