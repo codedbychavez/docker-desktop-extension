@@ -9,22 +9,44 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Typography
+  Typography,
+  Switch,
+  FormControlLabel,
+  FormGroup,
 } from "@mui/material";
 import { createDockerDesktopClient } from "@docker/extension-api-client";
 
-//obtain docker destkop extension client
+//obtain docker desktop extension client
 const ddClient = createDockerDesktopClient();
 
 export function App() {
   const [containers, setContainers] = React.useState<any[]>([]);
 
-  useEffect(() => {
-    // List all containers
+  const fetchAllContainers = async () => {
     ddClient.docker.cli.exec('ps', ['--all', '--format', '"{{json .}}"']).then((result) => {
       // result.parseJsonLines() parses the output of the command into an array of objects
       setContainers(result.parseJsonLines());
     });
+  }
+
+  const fetchRunningContainers = async () => {
+    ddClient.docker.cli.exec('ps', ['--format', '"{{json .}}"']).then((result) => {
+      // result.parseJsonLines() parses the output of the command into an array of objects
+      setContainers(result.parseJsonLines());
+    });
+  }
+
+  const handleFetchContainers = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.checked) {
+      fetchRunningContainers();
+    } else {
+      fetchAllContainers();
+    }
+  }
+
+  useEffect(() => {
+    // Get all containers
+    fetchAllContainers();
   }, []);
 
   return (
@@ -33,13 +55,18 @@ export function App() {
         Container list
       </Typography>
       <Typography
-      data-testid="subheading"
-      variant="body1"
-      color="text.secondary"
-      sx={{ mt: 2 }}
-    >
+        data-testid="subheading"
+        variant="body1"
+        color="text.secondary"
+        sx={{ mt: 2 }}
+      >
       Simple list of containers using Docker Extensions SDK.
       </Typography>
+      <FormGroup
+        sx={{ mt: 1 }}
+      >
+        <FormControlLabel control={<Switch onChange={(event) => handleFetchContainers(event)} />} label="Show only running containers" />
+      </FormGroup>
       <TableContainer sx={{mt:2}}>
         <Table>
           <TableHead>
