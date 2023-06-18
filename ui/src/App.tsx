@@ -1,26 +1,27 @@
+// ui/src/App.tsx
 import React, { useEffect } from 'react';
-import { 
+import {
   Paper,
-  Stack, 
+  Stack,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
-  Typography 
-} from '@mui/material';
-import { createDockerDesktopClient } from '@docker/extension-api-client';
+  Typography
+} from "@mui/material";
+import { createDockerDesktopClient } from "@docker/extension-api-client";
 
-// obtain docker desktop extension client
+//obtain docker destkop extension client
 const ddClient = createDockerDesktopClient();
 
 export function App() {
   const [containers, setContainers] = React.useState<any[]>([]);
 
   useEffect(() => {
-    // list all containers
-    ddClient.docker.cli.exec('ps', ['--all', '--format', '"{json .}"']).then((result) => {
+    // List all containers
+    ddClient.docker.cli.exec('ps', ['--all', '--format', '"{{json .}}"']).then((result) => {
       // result.parseJsonLines() parses the output of the command into an array of objects
       setContainers(result.parseJsonLines());
     });
@@ -32,14 +33,14 @@ export function App() {
         Container list
       </Typography>
       <Typography
-        data-testid="subheading"
-        variant="body1"
-        color="text.secondary"
-        sx={{ mt: 2 }}
-      >
-        Simple list of containers using Docker Extensions SDK.
+      data-testid="subheading"
+      variant="body1"
+      color="text.secondary"
+      sx={{ mt: 2 }}
+    >
+      Simple list of containers using Docker Extensions SDK.
       </Typography>
-      <TableContainer>
+      <TableContainer sx={{mt:2}}>
         <Table>
           <TableHead>
             <TableRow>
@@ -51,7 +52,7 @@ export function App() {
             </TableRow>
           </TableHead>
           <TableBody>
-            { containers.map((container) => (
+            {containers.map((container) => (
               <TableRow
                 key={container.ID}
                 sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
@@ -62,7 +63,7 @@ export function App() {
                 <TableCell>{container.CreatedAt}</TableCell>
                 <TableCell>{container.Status}</TableCell>
               </TableRow>
-            )) }
+            ))}
           </TableBody>
         </Table>
       </TableContainer>
