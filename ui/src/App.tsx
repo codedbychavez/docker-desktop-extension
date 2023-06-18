@@ -1,7 +1,6 @@
 // ui/src/App.tsx
 import React, { useEffect } from 'react';
 import {
-  Paper,
   Stack,
   Table,
   TableBody,
@@ -20,10 +19,10 @@ import { useFeatureFlag } from 'configcat-react';
 
 //obtain docker desktop extension client
 const ddClient = createDockerDesktopClient();
-const { value: isFilterSwitchEnabled, loading } = useFeatureFlag('filterswitch', false);
 
 export function App() {
   const [containers, setContainers] = React.useState<any[]>([]);
+  const { value: isFilterSwitchEnabled } = useFeatureFlag('filterswitch', false);
 
   const fetchAllContainers = async () => {
     ddClient.docker.cli.exec('ps', ['--all', '--format', '"{{json .}}"']).then((result) => {
@@ -68,12 +67,12 @@ export function App() {
         
         {
           isFilterSwitchEnabled && 
-          <FormGroup>
+          <FormGroup sx={{ mt: 1 }}>
             <FormControlLabel control={<Switch onChange={(event) => handleFetchContainers(event)} />} label="Show only running containers" />
           </FormGroup>
         }
 
-        <TableContainer sx={{mt:2}}>
+        <TableContainer sx={{ mt: 2 }}>
           <Table>
             <TableHead>
               <TableRow>
